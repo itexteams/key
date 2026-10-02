@@ -16,7 +16,9 @@
             --step-color: #2f855a;
             --bg-body: #e6f2eb;
             --border-color: #cbd5e0;
-            --danger-color: #e53e3e;
+            --danger-color: #c53030;
+            --danger-bg: #fff5f5;
+            --danger-border: #feb2b2;
         }
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -95,7 +97,26 @@
         .key-container { display: flex; gap: 8px; margin-top: 8px; }
         #licenseKey { background-color: #edf2f7; font-family: monospace; font-size: 13px; color: #2d3748; }
         .btn-copy { background-color: #4a5568; color: white; border: none; border-radius: 4px; padding: 0 15px; cursor: pointer; font-weight: bold; }
-        .error-msg { display: none; margin-top: 15px; padding: 12px; border-radius: 6px; background-color: #fff5f5; color: var(--danger-color); border: 1px solid #feb2b2; font-size: 14px; text-align: left; }
+        
+        /* Hộp cảnh báo khi máy cũ nhập lại */
+        .error-msg { 
+            display: none; 
+            margin-top: 15px; 
+            padding: 14px; 
+            border-radius: 6px; 
+            background-color: var(--danger-bg); 
+            color: var(--danger-color); 
+            border: 1px solid var(--danger-border); 
+            font-size: 14px; 
+            line-height: 1.6;
+            text-align: left; 
+        }
+        .error-msg a {
+            color: #2b6cb0;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
         @media (max-width: 900px) { 
             .grid-container { grid-template-columns: 1fr; } 
             .middle-col { order: -1; margin-bottom: 20px; } 
@@ -130,7 +151,7 @@
             <img src="splash.png" alt="iTeX Banner" class="banner-img">
             
             <h2>Kích hoạt dùng thử iTeX</h2>
-            <p class="subtitle">Nhận key trải nghiệm đầy đủ tính năng miễn phí trong 7 ngày</p>
+            <p class="subtitle">Mỗi máy tính được trải nghiệm miễn phí đầy đủ tính năng trong 7 ngày (1 lần duy nhất)</p>
 
             <a href="https://drive.google.com/file/d/1UsOFRt4khadCtrs_R-Lqt-mYzljREzQN/view?usp=drive_link" class="btn btn-download" target="_blank">📥 Tải phần mềm iTeX</a>
 
@@ -141,12 +162,12 @@
 
             <button class="btn btn-generate" id="btnSubmit" onclick="generateKey()">Nhận Key Dùng Thử 7 Ngày</button>
 
-            <!-- Thông báo lỗi khi nhập lại hoặc lỗi kết nối -->
+            <!-- Hộp báo lỗi / thông báo cho máy cũ -->
             <div class="error-msg" id="errorBox"></div>
 
-            <!-- Khu vực hiển thị Key -->
+            <!-- Khu vực hiển thị Key cho máy mới -->
             <div class="result-box" id="resultBox">
-                <label>Key dùng thử của bạn:</label>
+                <label>Key kích hoạt dùng thử 7 ngày của bạn:</label>
                 <div class="key-container">
                     <input type="text" id="licenseKey" readonly>
                     <button class="btn-copy" onclick="copyKey()" id="copyBtn">Copy</button>
@@ -179,10 +200,9 @@
 </div>
 
 <script>
-    // Cấu hình
     const PRIVATE_KEY_HEX = "062a69fe9ab53b837632f579f726bb535e1c8a90cf97bef8a877ff097176d6b4";
     const TRIAL_DAYS = 7;
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz53NwwVtU49b3DbZwDBt7SimjA6NX7LbOlYdWQ0LGE24r3kRsYe1w2td-FvnYa7g/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzwRxZYCSlhIRW2bS59NSYOm9sroqWghbA-FLOCiTCQ1bctAfvuikf7MJ7IBQhk7WI/exec";
 
     function hexToUint8Array(hexString) {
         if (hexString.length % 2 !== 0) throw new Error("Invalid hex string");
@@ -217,21 +237,19 @@
         const resultBox = document.getElementById('resultBox');
         const errorBox = document.getElementById('errorBox');
         
-        // Ẩn các hộp thông báo cũ
         resultBox.style.display = 'none';
         errorBox.style.display = 'none';
 
         if (!serialNumber) {
-            alert("Vui lòng nhập mã máy (Serial/MAC)!");
+            alert("Vui lòng nhập ID của máy!");
             return;
         }
 
-        // Khóa nút để tránh spam click
         btn.disabled = true;
-        btn.innerText = "Đang kiểm tra...";
+        btn.innerText = "Đang kiểm tra hệ thống...";
 
         try {
-            // 1. Tính toán ngày hết hạn và tạo chuỗi key
+            // 1. Tạo chuỗi ký key 7 ngày
             const now = new Date();
             const expirationDate = new Date(now.getTime() + (TRIAL_DAYS * 24 * 60 * 60 * 1000));
             const expirationStr = formatPythonDate(expirationDate);
@@ -248,31 +266,33 @@
             const signedMessageBytes = nacl.sign(messageBytes, keyPair.secretKey);
             const finalKey = uint8ArrayToBase64UrlSafe(signedMessageBytes);
 
-            // 2. Gửi request lên Google Apps Script xác thực
+            // 2. Gửi request lên Apps Script kiểm tra
             const requestUrl = `${SCRIPT_URL}?id=${encodeURIComponent(serialNumber)}&key=${encodeURIComponent(finalKey)}`;
             const response = await fetch(requestUrl);
             const data = await response.json();
 
-            // 3. Xử lý phản hồi từ Google Sheet
+            // 3. Phản hồi theo trạng thái
             if (data.status === "exists") {
-                errorBox.innerHTML = `⚠️ <b>Thông báo:</b> Mã máy này đã được nhận key dùng thử trước đó. Mỗi máy chỉ được cấp dùng thử 1 lần!`;
+                // Máy cũ: Báo không nhận được key nữa và yêu cầu liên hệ Zalo
+                errorBox.innerHTML = `⚠️ <b>Thông báo:</b> Mã máy này đã từng nhận key dùng thử và không thể nhận thêm.<br>👉 Vui lòng liên hệ Admin qua Zalo: <a href="https://zalo.me/0977346779" target="_blank"><b>0977346779</b></a> để đăng ký bản quyền!`;
                 errorBox.style.display = 'block';
             } else if (data.status === "success") {
+                // Máy mới: Hiển thị key
                 document.getElementById('licenseKey').value = finalKey;
                 document.getElementById('resultBox').style.display = 'block';
-                document.getElementById('expiryNotice').innerText = `* Key dùng thử có hạn đến ngày: ${expirationStr} (${TRIAL_DAYS} ngày kể từ hôm nay)`;
+                document.getElementById('expiryNotice').innerText = `* Key dùng thử có hạn đến ngày: ${expirationStr} (${TRIAL_DAYS} ngày). Mỗi máy chỉ được cấp 1 lần duy nhất!`;
                 
                 const copyBtn = document.getElementById('copyBtn');
                 copyBtn.innerText = 'Copy';
                 copyBtn.style.backgroundColor = '#4a5568';
             } else {
-                errorBox.innerText = "Có lỗi xảy ra: " + (data.message || "Vui lòng thử lại!");
+                errorBox.innerText = "Lỗi: " + (data.message || "Vui lòng thử lại!");
                 errorBox.style.display = 'block';
             }
 
         } catch (error) {
             console.error("Lỗi:", error);
-            errorBox.innerText = "Lỗi kết nối máy chủ xác thực. Vui lòng kiểm tra lại mạng hoặc thử lại sau!";
+            errorBox.innerText = "Lỗi kết nối máy chủ xác thực. Vui lòng thử lại sau!";
             errorBox.style.display = 'block';
         } finally {
             btn.disabled = false;
