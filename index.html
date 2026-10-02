@@ -135,7 +135,7 @@
                     <li><span class="step-title">Bước 1.</span> Tải phần mềm</li>
                     <li><span class="step-title">Bước 2.</span> Giải nén thư mục iTeX</li>
                     <li><span class="step-title">Bước 3.</span> Chạy file iTeX.exe để lấy ID của máy</li>
-                    <li><span class="step-title">Bước 4.</span> Nhập ID của máy vào nhận Key dùng thử 7 ngày</li>
+                    <li><span class="step-title">Bước 4.</span> Nhập ID của máy vào nhận Key dùng thử 1 ngày</li>
                     <li><span class="step-title">Bước 5.</span> Copy Key đăng nhập vào iTeX</li>
                 </ul>
             </div>
@@ -151,7 +151,7 @@
             <img src="splash.png" alt="iTeX Banner" class="banner-img">
             
             <h2>Kích hoạt dùng thử iTeX</h2>
-            <p class="subtitle">Mỗi máy tính được trải nghiệm miễn phí đầy đủ tính năng trong 7 ngày (1 lần duy nhất)</p>
+            <p class="subtitle">Mỗi máy tính được trải nghiệm miễn phí đầy đủ tính năng trong 1 ngày (1 lần duy nhất)</p>
 
             <a href="https://drive.google.com/file/d/1UsOFRt4khadCtrs_R-Lqt-mYzljREzQN/view?usp=drive_link" class="btn btn-download" target="_blank">📥 Tải phần mềm iTeX</a>
 
@@ -160,14 +160,14 @@
                 <input type="text" id="macAddress" placeholder="VD: 0025_38B2_71B2_B69E.">
             </div>
 
-            <button class="btn btn-generate" id="btnSubmit" onclick="generateKey()">Nhận Key Dùng Thử 7 Ngày</button>
+            <button class="btn btn-generate" id="btnSubmit" onclick="generateKey()">Nhận Key Dùng Thử 1 Ngày</button>
 
             <!-- Hộp báo lỗi / thông báo cho máy cũ -->
             <div class="error-msg" id="errorBox"></div>
 
             <!-- Khu vực hiển thị Key cho máy mới -->
             <div class="result-box" id="resultBox">
-                <label>Key kích hoạt dùng thử 7 ngày của bạn:</label>
+                <label>Key kích hoạt dùng thử 1 ngày của bạn:</label>
                 <div class="key-container">
                     <input type="text" id="licenseKey" readonly>
                     <button class="btn-copy" onclick="copyKey()" id="copyBtn">Copy</button>
@@ -201,7 +201,7 @@
 
 <script>
     const PRIVATE_KEY_HEX = "062a69fe9ab53b837632f579f726bb535e1c8a90cf97bef8a877ff097176d6b4";
-    const TRIAL_DAYS = 7;
+    const TRIAL_DAYS = 1;
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyHoHeNuIo7LmccT8g6uedCzy_Zeyh0fUTolw950UeOPs0gRTLpdsO_UdTg3I4xcQ/exec";
 
     function hexToUint8Array(hexString) {
@@ -249,7 +249,7 @@
         btn.innerText = "Đang kiểm tra hệ thống...";
 
         try {
-            // 1. Tạo chuỗi ký key 7 ngày
+            // 1. Tạo chuỗi ký key 1 ngày
             const now = new Date();
             const expirationDate = new Date(now.getTime() + (TRIAL_DAYS * 24 * 60 * 60 * 1000));
             const expirationStr = formatPythonDate(expirationDate);
@@ -296,7 +296,7 @@
             errorBox.style.display = 'block';
         } finally {
             btn.disabled = false;
-            btn.innerText = "Nhận Key Dùng Thử 7 Ngày";
+            btn.innerText = "Nhận Key Dùng Thử 1 Ngày";
         }
     }
 
