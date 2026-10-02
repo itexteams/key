@@ -16,14 +16,60 @@
             --step-color: #2f855a;
             --bg-body: #e6f2eb;
             --border-color: #cbd5e0;
+            --danger-color: #e53e3e;
         }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-body); color: #333; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .main-wrapper { background: #fff; max-width: 1200px; width: 100%; border-top: 15px solid #fff; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); padding: 20px; box-sizing: border-box; }
-        .grid-container { display: grid; grid-template-columns: 280px 1fr 320px; gap: 20px; }
-        .side-col { display: flex; flex-direction: column; gap: 15px; }
-        .info-box { border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; background: #fcfcfc; }
-        .info-box h3 { text-align: center; color: var(--primary-color); margin-top: 0; margin-bottom: 15px; font-size: 16px; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; }
-        .step-list { list-style: none; padding: 0; margin: 0; font-size: 14px; line-height: 1.6; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg-body); 
+            color: #333; 
+            margin: 0; 
+            padding: 20px; 
+            display: flex; 
+            justify-content: center; 
+        }
+        .main-wrapper { 
+            background: #fff; 
+            max-width: 1200px; 
+            width: 100%; 
+            border-top: 15px solid #fff; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1); 
+            padding: 20px; 
+            box-sizing: border-box; 
+        }
+        .grid-container { 
+            display: grid; 
+            grid-template-columns: 280px 1fr 320px; 
+            gap: 20px; 
+        }
+        .side-col { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+        }
+        .info-box { 
+            border: 1px solid var(--border-color); 
+            border-radius: 8px; 
+            padding: 15px; 
+            background: #fcfcfc; 
+        }
+        .info-box h3 { 
+            text-align: center; 
+            color: var(--primary-color); 
+            margin-top: 0; 
+            margin-bottom: 15px; 
+            font-size: 16px; 
+            text-transform: uppercase; 
+            border-bottom: 1px solid #e2e8f0; 
+            padding-bottom: 10px; 
+        }
+        .step-list { 
+            list-style: none; 
+            padding: 0; 
+            margin: 0; 
+            font-size: 14px; 
+            line-height: 1.6; 
+        }
         .step-list li { margin-bottom: 8px; }
         .step-list .step-title { color: var(--step-color); font-weight: bold; display: block; }
         .feature-list { padding-left: 15px; margin: 0; font-size: 14px; line-height: 1.5; text-align: justify; }
@@ -42,13 +88,18 @@
         input[type="text"]:focus { outline: none; border-color: var(--secondary-color); }
         .btn { display: block; width: 100%; padding: 12px; font-size: 15px; font-weight: bold; color: #fff; border: none; border-radius: 6px; cursor: pointer; text-decoration: none; box-sizing: border-box; margin-bottom: 15px; transition: opacity 0.2s; }
         .btn:hover { opacity: 0.9; }
+        .btn:disabled { background-color: #a0aec0; cursor: not-allowed; }
         .btn-download { background-color: var(--accent-color); }
         .btn-generate { background-color: var(--secondary-color); }
         .result-box { display: none; margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border-color); text-align: left; }
         .key-container { display: flex; gap: 8px; margin-top: 8px; }
         #licenseKey { background-color: #edf2f7; font-family: monospace; font-size: 13px; color: #2d3748; }
         .btn-copy { background-color: #4a5568; color: white; border: none; border-radius: 4px; padding: 0 15px; cursor: pointer; font-weight: bold; }
-        @media (max-width: 900px) { .grid-container { grid-template-columns: 1fr; } .middle-col { order: -1; margin-bottom: 20px; } }
+        .error-msg { display: none; margin-top: 15px; padding: 12px; border-radius: 6px; background-color: #fff5f5; color: var(--danger-color); border: 1px solid #feb2b2; font-size: 14px; text-align: left; }
+        @media (max-width: 900px) { 
+            .grid-container { grid-template-columns: 1fr; } 
+            .middle-col { order: -1; margin-bottom: 20px; } 
+        }
     </style>
 </head>
 <body>
@@ -88,9 +139,12 @@
                 <input type="text" id="macAddress" placeholder="VD: 0025_38B2_71B2_B69E.">
             </div>
 
-            <button class="btn btn-generate" onclick="generateKey()">Nhận Key Dùng Thử 7 Ngày</button>
+            <button class="btn btn-generate" id="btnSubmit" onclick="generateKey()">Nhận Key Dùng Thử 7 Ngày</button>
 
-            <!-- Khu vực hiển thị Key ẩn -->
+            <!-- Thông báo lỗi khi nhập lại hoặc lỗi kết nối -->
+            <div class="error-msg" id="errorBox"></div>
+
+            <!-- Khu vực hiển thị Key -->
             <div class="result-box" id="resultBox">
                 <label>Key dùng thử của bạn:</label>
                 <div class="key-container">
@@ -125,11 +179,11 @@
 </div>
 
 <script>
-    // Private Key ký ED25519
+    // Cấu hình
     const PRIVATE_KEY_HEX = "062a69fe9ab53b837632f579f726bb535e1c8a90cf97bef8a877ff097176d6b4";
-    const TRIAL_DAYS = 7; // Số ngày dùng thử
+    const TRIAL_DAYS = 7;
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz53NwwVtU49b3DbZwDBt7SimjA6NX7LbOlYdWQ0LGE24r3kRsYe1w2td-FvnYa7g/exec";
 
-    // Hàm chuyển đổi HEX (Private Key) sang mảng Uint8Array
     function hexToUint8Array(hexString) {
         if (hexString.length % 2 !== 0) throw new Error("Invalid hex string");
         let array = new Uint8Array(hexString.length / 2);
@@ -139,7 +193,6 @@
         return array;
     }
 
-    // Hàm mã hóa mảng byte sang Base64 chuẩn url-safe (tương thích Python urlsafe_b64encode)
     function uint8ArrayToBase64UrlSafe(uint8Array) {
         let binary = '';
         const len = uint8Array.byteLength;
@@ -157,58 +210,74 @@
         return `${yyyy}-${mm}-${dd}`;
     }
 
-    function generateKey() {
-        const serialNumber = document.getElementById('macAddress').value.trim();
+    async function generateKey() {
+        const serialInput = document.getElementById('macAddress');
+        const serialNumber = serialInput.value.trim();
+        const btn = document.getElementById('btnSubmit');
+        const resultBox = document.getElementById('resultBox');
+        const errorBox = document.getElementById('errorBox');
         
+        // Ẩn các hộp thông báo cũ
+        resultBox.style.display = 'none';
+        errorBox.style.display = 'none';
+
         if (!serialNumber) {
             alert("Vui lòng nhập mã máy (Serial/MAC)!");
             return;
         }
 
-        // Tính ngày hết hạn: Ngày hiện tại + 7 ngày
-        const now = new Date();
-        const expirationDate = new Date(now.getTime() + (TRIAL_DAYS * 24 * 60 * 60 * 1000));
-        const expirationStr = formatPythonDate(expirationDate);
+        // Khóa nút để tránh spam click
+        btn.disabled = true;
+        btn.innerText = "Đang kiểm tra...";
 
-        // ==========================================
-        // THUẬT TOÁN TẠO KEY (ED25519)
-        // ==========================================
-        const payload = {
-            serial: serialNumber,
-            exp: expirationStr
-        };
-        const messageStr = JSON.stringify(payload);
-        const messageBytes = new TextEncoder().encode(messageStr);
+        try {
+            // 1. Tính toán ngày hết hạn và tạo chuỗi key
+            const now = new Date();
+            const expirationDate = new Date(now.getTime() + (TRIAL_DAYS * 24 * 60 * 60 * 1000));
+            const expirationStr = formatPythonDate(expirationDate);
 
-        // Khôi phục Signing Key từ Hex Seed
-        const seedBytes = hexToUint8Array(PRIVATE_KEY_HEX);
-        const keyPair = nacl.sign.keyPair.fromSeed(seedBytes);
+            const payload = {
+                serial: serialNumber,
+                exp: expirationStr
+            };
+            const messageStr = JSON.stringify(payload);
+            const messageBytes = new TextEncoder().encode(messageStr);
 
-        // Ký thông điệp (Signature + Message)
-        const signedMessageBytes = nacl.sign(messageBytes, keyPair.secretKey);
+            const seedBytes = hexToUint8Array(PRIVATE_KEY_HEX);
+            const keyPair = nacl.sign.keyPair.fromSeed(seedBytes);
+            const signedMessageBytes = nacl.sign(messageBytes, keyPair.secretKey);
+            const finalKey = uint8ArrayToBase64UrlSafe(signedMessageBytes);
 
-        // Mã hóa Base64 url-safe
-        const finalKey = uint8ArrayToBase64UrlSafe(signedMessageBytes);
-        // ==========================================
+            // 2. Gửi request lên Google Apps Script xác thực
+            const requestUrl = `${SCRIPT_URL}?id=${encodeURIComponent(serialNumber)}&key=${encodeURIComponent(finalKey)}`;
+            const response = await fetch(requestUrl);
+            const data = await response.json();
 
-        // ==========================================
-        // GỬI DỮ LIỆU NGẦM LÊN GOOGLE SHEETS
-        // ==========================================
-        const scriptURL = "https://script.google.com/macros/s/AKfycbzwRxZYCSlhIRW2bS59NSYOm9sroqWghbA-FLOCiTCQ1bctAfvuikf7MJ7IBQhk7WI/exec";
-        const requestUrl = `${scriptURL}?id=${encodeURIComponent(serialNumber)}&key=${encodeURIComponent(finalKey)}`;
-        
-        fetch(requestUrl, { method: 'GET', mode: 'no-cors' })
-            .catch(error => console.log('Lỗi lưu log:', error)); 
-        // ==========================================
+            // 3. Xử lý phản hồi từ Google Sheet
+            if (data.status === "exists") {
+                errorBox.innerHTML = `⚠️ <b>Thông báo:</b> Mã máy này đã được nhận key dùng thử trước đó. Mỗi máy chỉ được cấp dùng thử 1 lần!`;
+                errorBox.style.display = 'block';
+            } else if (data.status === "success") {
+                document.getElementById('licenseKey').value = finalKey;
+                document.getElementById('resultBox').style.display = 'block';
+                document.getElementById('expiryNotice').innerText = `* Key dùng thử có hạn đến ngày: ${expirationStr} (${TRIAL_DAYS} ngày kể từ hôm nay)`;
+                
+                const copyBtn = document.getElementById('copyBtn');
+                copyBtn.innerText = 'Copy';
+                copyBtn.style.backgroundColor = '#4a5568';
+            } else {
+                errorBox.innerText = "Có lỗi xảy ra: " + (data.message || "Vui lòng thử lại!");
+                errorBox.style.display = 'block';
+            }
 
-        // Hiển thị key dùng thử
-        document.getElementById('licenseKey').value = finalKey;
-        document.getElementById('resultBox').style.display = 'block';
-        document.getElementById('expiryNotice').innerText = `* Key dùng thử có hạn đến ngày: ${expirationStr} (${TRIAL_DAYS} ngày kể từ hôm nay)`;
-        
-        const copyBtn = document.getElementById('copyBtn');
-        copyBtn.innerText = 'Copy';
-        copyBtn.style.backgroundColor = '#4a5568';
+        } catch (error) {
+            console.error("Lỗi:", error);
+            errorBox.innerText = "Lỗi kết nối máy chủ xác thực. Vui lòng kiểm tra lại mạng hoặc thử lại sau!";
+            errorBox.style.display = 'block';
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "Nhận Key Dùng Thử 7 Ngày";
+        }
     }
 
     function copyKey() {
