@@ -53,7 +53,7 @@
 
 <div class="main-wrapper">
     <div class="grid-container">
-        <!-- Cột Trái: Hướng dẫn & Zalo -->
+        <!-- Cột Trái -->
         <div class="side-col">
             <div class="info-box">
                 <h3>HƯỚNG DẪN</h3>
@@ -72,7 +72,7 @@
             </div>
         </div>
 
-        <!-- Cột Giữa: Chức năng chính -->
+        <!-- Cột Giữa -->
         <div class="middle-col">
             <img src="splash.png" alt="iTeX Banner" class="banner-img" onerror="this.style.display='none'">
             
@@ -88,7 +88,7 @@
 
             <button class="btn btn-generate" id="btnGenerate" onclick="generateKey()">Nhận Key Miễn Phí</button>
 
-            <!-- Khu vực hiển thị Key ẩn -->
+            <!-- Hiển thị Key -->
             <div class="result-box" id="resultBox">
                 <label>Key kích hoạt của bạn:</label>
                 <div class="key-container">
@@ -99,7 +99,7 @@
             </div>
         </div>
 
-        <!-- Cột Phải: Giới thiệu & Facebook -->
+        <!-- Cột Phải -->
         <div class="side-col">
             <div class="info-box">
                 <h3>GIỚI THIỆU</h3>
@@ -122,12 +122,10 @@
 </div>
 
 <script>
-    // THAY ĐƯỜNG LINK GOOGLE APPS SCRIPT CỦA THẦY VÀO ĐÂY
-    const scriptURL = "https://script.google.com/macros/s/AKfycby8Xzi5mNRWkiP2Z34dNf9gcCRgZdc0J9LdhesCpotr-qFjz9kggHwJo4bRZl0oB6tj/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfkhC2bmUJ3vUoB9HH4izC_wrDOOwf_N3X3wtgnjNOvFO3XGMHOIdr_6_FTxuOqhx3/exec";
 
     async function generateKey() {
         const serialNumber = document.getElementById('macAddress').value.trim();
-        
         if (!serialNumber) {
             alert("Vui lòng nhập mã máy (Serial/MAC)!");
             return;
@@ -136,15 +134,17 @@
         const btn = document.getElementById('btnGenerate');
         const resultBox = document.getElementById('resultBox');
         const expiryNotice = document.getElementById('expiryNotice');
-        
-        // Khóa nút trong lúc chờ mạng
+
         btn.innerText = "Đang kết nối hệ thống...";
         btn.disabled = true;
         resultBox.style.display = 'none';
 
         try {
-            // Gửi API lên hệ thống Google
-            const response = await fetch(`${scriptURL}?id=${encodeURIComponent(serialNumber)}`);
+            // Gửi trực tiếp yêu cầu xin Key lên Google Apps Script
+            const response = await fetch(`${SCRIPT_URL}?id=${encodeURIComponent(serialNumber)}`, {
+                method: "GET",
+                redirect: "follow"
+            });
             const data = await response.json();
 
             if (data.status === "error") {
@@ -152,29 +152,25 @@
                 return;
             }
 
-            // Hiển thị Key
             document.getElementById('licenseKey').value = data.key;
             resultBox.style.display = 'block';
-            
-            // Xử lý thông báo tùy theo việc cấp mới hay cấp lại
+
             if (data.status === "exists") {
-                expiryNotice.innerText = "⚠️ ID này đã được cấp Key trước đó. Đây là Key của bạn.";
+                expiryNotice.innerText = "⚠️ ID này đã được cấp Key trước đó. Đây là Key của bạn:";
                 expiryNotice.style.color = "#d69e2e";
             } else if (data.status === "ok") {
                 expiryNotice.innerText = `✅ Đã tạo Key thành công! (Hạn đến ${data.exp})`;
                 expiryNotice.style.color = "var(--accent-color)";
             }
 
-            // Đặt lại nút Copy
             const copyBtn = document.getElementById('copyBtn');
             copyBtn.innerText = 'Copy';
             copyBtn.style.backgroundColor = '#4a5568';
 
         } catch (error) {
-            alert("Lỗi kết nối mạng! Vui lòng kiểm tra Internet và thử lại.");
-            console.error("Lỗi Fetch:", error);
+            alert("Lỗi kết nối máy chủ! Vui lòng thử lại sau vài giây.");
+            console.error("Lỗi:", error);
         } finally {
-            // Mở khóa nút
             btn.innerText = "Nhận Key Miễn Phí";
             btn.disabled = false;
         }
@@ -184,13 +180,10 @@
         const copyText = document.getElementById("licenseKey");
         copyText.select();
         copyText.setSelectionRange(0, 99999);
-        
         navigator.clipboard.writeText(copyText.value).then(() => {
             const btn = document.getElementById("copyBtn");
             btn.innerText = "Đã Copy!";
             btn.style.backgroundColor = "var(--accent-color)";
-        }).catch(err => {
-            alert("Không thể copy tự động, vui lòng copy thủ công!");
         });
     }
 </script>
