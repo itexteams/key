@@ -3,10 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tải phần mềm & Nhận Key iTeX Dùng Thử</title>
-    
-    <!-- Thư viện TweetNaCl.js hỗ trợ thuật toán signing như PyNaCl -->
-    <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
+    <title>Tải phần mềm & Nhận Key iTeX</title>
     
     <style>
         :root {
@@ -16,62 +13,14 @@
             --step-color: #2f855a;
             --bg-body: #e6f2eb;
             --border-color: #cbd5e0;
-            --danger-color: #c53030;
-            --danger-bg: #fff5f5;
-            --danger-border: #feb2b2;
         }
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background-color: var(--bg-body); 
-            color: #333; 
-            margin: 0; 
-            padding: 20px; 
-            display: flex; 
-            justify-content: center; 
-        }
-        .main-wrapper { 
-            background: #fff; 
-            max-width: 1200px; 
-            width: 100%; 
-            border-top: 15px solid #fff; 
-            border-radius: 8px; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1); 
-            padding: 20px; 
-            box-sizing: border-box; 
-        }
-        .grid-container { 
-            display: grid; 
-            grid-template-columns: 280px 1fr 320px; 
-            gap: 20px; 
-        }
-        .side-col { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 15px; 
-        }
-        .info-box { 
-            border: 1px solid var(--border-color); 
-            border-radius: 8px; 
-            padding: 15px; 
-            background: #fcfcfc; 
-        }
-        .info-box h3 { 
-            text-align: center; 
-            color: var(--primary-color); 
-            margin-top: 0; 
-            margin-bottom: 15px; 
-            font-size: 16px; 
-            text-transform: uppercase; 
-            border-bottom: 1px solid #e2e8f0; 
-            padding-bottom: 10px; 
-        }
-        .step-list { 
-            list-style: none; 
-            padding: 0; 
-            margin: 0; 
-            font-size: 14px; 
-            line-height: 1.6; 
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-body); color: #333; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .main-wrapper { background: #fff; max-width: 1200px; width: 100%; border-top: 15px solid #fff; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); padding: 20px; box-sizing: border-box; }
+        .grid-container { display: grid; grid-template-columns: 280px 1fr 320px; gap: 20px; }
+        .side-col { display: flex; flex-direction: column; gap: 15px; }
+        .info-box { border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; background: #fcfcfc; }
+        .info-box h3 { text-align: center; color: var(--primary-color); margin-top: 0; margin-bottom: 15px; font-size: 16px; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; }
+        .step-list { list-style: none; padding: 0; margin: 0; font-size: 14px; line-height: 1.6; }
         .step-list li { margin-bottom: 8px; }
         .step-list .step-title { color: var(--step-color); font-weight: bold; display: block; }
         .feature-list { padding-left: 15px; margin: 0; font-size: 14px; line-height: 1.5; text-align: justify; }
@@ -88,8 +37,8 @@
         .form-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; }
         input[type="text"] { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px; box-sizing: border-box; }
         input[type="text"]:focus { outline: none; border-color: var(--secondary-color); }
-        .btn { display: block; width: 100%; padding: 12px; font-size: 15px; font-weight: bold; color: #fff; border: none; border-radius: 6px; cursor: pointer; text-decoration: none; box-sizing: border-box; margin-bottom: 15px; transition: opacity 0.2s; }
-        .btn:hover { opacity: 0.9; }
+        .btn { display: block; width: 100%; padding: 12px; font-size: 15px; font-weight: bold; color: #fff; border: none; border-radius: 6px; cursor: pointer; text-decoration: none; box-sizing: border-box; margin-bottom: 15px; transition: all 0.2s; }
+        .btn:hover:not(:disabled) { opacity: 0.9; }
         .btn:disabled { background-color: #a0aec0; cursor: not-allowed; }
         .btn-download { background-color: var(--accent-color); }
         .btn-generate { background-color: var(--secondary-color); }
@@ -97,30 +46,7 @@
         .key-container { display: flex; gap: 8px; margin-top: 8px; }
         #licenseKey { background-color: #edf2f7; font-family: monospace; font-size: 13px; color: #2d3748; }
         .btn-copy { background-color: #4a5568; color: white; border: none; border-radius: 4px; padding: 0 15px; cursor: pointer; font-weight: bold; }
-        
-        /* Hộp cảnh báo khi máy cũ nhập lại */
-        .error-msg { 
-            display: none; 
-            margin-top: 15px; 
-            padding: 14px; 
-            border-radius: 6px; 
-            background-color: var(--danger-bg); 
-            color: var(--danger-color); 
-            border: 1px solid var(--danger-border); 
-            font-size: 14px; 
-            line-height: 1.6;
-            text-align: left; 
-        }
-        .error-msg a {
-            color: #2b6cb0;
-            font-weight: bold;
-            text-decoration: underline;
-        }
-
-        @media (max-width: 900px) { 
-            .grid-container { grid-template-columns: 1fr; } 
-            .middle-col { order: -1; margin-bottom: 20px; } 
-        }
+        @media (max-width: 900px) { .grid-container { grid-template-columns: 1fr; } .middle-col { order: -1; margin-bottom: 20px; } }
     </style>
 </head>
 <body>
@@ -135,7 +61,7 @@
                     <li><span class="step-title">Bước 1.</span> Tải phần mềm</li>
                     <li><span class="step-title">Bước 2.</span> Giải nén thư mục iTeX</li>
                     <li><span class="step-title">Bước 3.</span> Chạy file iTeX.exe để lấy ID của máy</li>
-                    <li><span class="step-title">Bước 4.</span> Nhập ID của máy vào nhận Key dùng thử 1 ngày</li>
+                    <li><span class="step-title">Bước 4.</span> Nhập ID của máy vào nhận Key miễn phí</li>
                     <li><span class="step-title">Bước 5.</span> Copy Key đăng nhập vào iTeX</li>
                 </ul>
             </div>
@@ -148,10 +74,10 @@
 
         <!-- Cột Giữa: Chức năng chính -->
         <div class="middle-col">
-            <img src="splash.png" alt="iTeX Banner" class="banner-img">
+            <img src="splash.png" alt="iTeX Banner" class="banner-img" onerror="this.style.display='none'">
             
-            <h2>Kích hoạt dùng thử iTeX</h2>
-            <p class="subtitle">Mỗi máy tính được trải nghiệm miễn phí đầy đủ tính năng trong 1 ngày (1 lần duy nhất)</p>
+            <h2>Kích hoạt phần mềm iTeX</h2>
+            <p class="subtitle">Tải bộ cài đặt và nhận key bản quyền miễn phí</p>
 
             <a href="https://drive.google.com/file/d/1UsOFRt4khadCtrs_R-Lqt-mYzljREzQN/view?usp=drive_link" class="btn btn-download" target="_blank">📥 Tải phần mềm iTeX</a>
 
@@ -160,19 +86,16 @@
                 <input type="text" id="macAddress" placeholder="VD: 0025_38B2_71B2_B69E.">
             </div>
 
-            <button class="btn btn-generate" id="btnSubmit" onclick="generateKey()">Nhận Key Dùng Thử 1 Ngày</button>
+            <button class="btn btn-generate" id="btnGenerate" onclick="generateKey()">Nhận Key Miễn Phí</button>
 
-            <!-- Hộp báo lỗi / thông báo cho máy cũ -->
-            <div class="error-msg" id="errorBox"></div>
-
-            <!-- Khu vực hiển thị Key cho máy mới -->
+            <!-- Khu vực hiển thị Key ẩn -->
             <div class="result-box" id="resultBox">
-                <label>Key kích hoạt dùng thử 1 ngày của bạn:</label>
+                <label>Key kích hoạt của bạn:</label>
                 <div class="key-container">
                     <input type="text" id="licenseKey" readonly>
                     <button class="btn-copy" onclick="copyKey()" id="copyBtn">Copy</button>
                 </div>
-                <p style="font-size: 12px; color: var(--accent-color); margin-top: 10px;" id="expiryNotice"></p>
+                <p style="font-size: 13px; font-weight: 600; margin-top: 10px;" id="expiryNotice"></p>
             </div>
         </div>
 
@@ -182,121 +105,78 @@
                 <h3>GIỚI THIỆU</h3>
                 <ol class="feature-list">
                     <li>Xuất tài liệu, đáp án tài liệu cho học sinh ôn tập với số lượng tùy ý</li>
-                    <li>Xuất đề thi, đáp án, QrCode, với số lượng mã đề tùy ý mã khác nhau thì câu hỏi sẽ thay số khác nhau. xuất ma trận, đặc tả đề theo công văn của Bộ</li>
-                    <li>Tạo đề kiểm tra Online. Giao đề kiểm soát học sinh làm bài. Thống kê chi tiết đầy đủ kết quả học sinh.</li>
+                    <li>Xuất đề thi, đáp án, QrCode, với số lượng mã đề tùy ý. Xuất ma trận, đặc tả đề theo công văn của Bộ</li>
+                    <li>Tạo đề kiểm tra Online. Thống kê chi tiết đầy đủ kết quả học sinh.</li>
                     <li>Xuất slide trình chiếu dạy học trên lớp</li>
                     <li>Chatbot AI hỗ trợ tạo các câu hỏi cơ bản</li>
-                    <li>Phần mềm thiên về xuất các sản phẩm PDF, nhưng khi cần nộp cho nhà trường vẫn có thể xuất Word</li>
+                    <li>Phần mềm thiên về xuất các sản phẩm PDF, khi cần vẫn có thể xuất Word</li>
                 </ol>
             </div>
 
             <div class="info-box text-center">
                 <h3>NHÓM FACEBOOK</h3>
-                <a href="https://www.facebook.com/share/g/1Jizxu1uL3/" class="fb-link" target="_blank">https://www.facebook.com/share/g/1Jizxu1uL3/</a>
+                <a href="https://www.facebook.com/share/g/1Jizxu1uL3/" class="fb-link" target="_blank">Cộng đồng người dùng iTeX</a>
             </div>
         </div>
-
     </div>
 </div>
 
 <script>
-    const PRIVATE_KEY_HEX = "062a69fe9ab53b837632f579f726bb535e1c8a90cf97bef8a877ff097176d6b4";
-    const TRIAL_DAYS = 1;
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyHoHeNuIo7LmccT8g6uedCzy_Zeyh0fUTolw950UeOPs0gRTLpdsO_UdTg3I4xcQ/exec";
-
-    function hexToUint8Array(hexString) {
-        if (hexString.length % 2 !== 0) throw new Error("Invalid hex string");
-        let array = new Uint8Array(hexString.length / 2);
-        for (let i = 0; i < hexString.length; i += 2) {
-            array[i / 2] = parseInt(hexString.substring(i, i + 2), 16);
-        }
-        return array;
-    }
-
-    function uint8ArrayToBase64UrlSafe(uint8Array) {
-        let binary = '';
-        const len = uint8Array.byteLength;
-        for (let i = 0; i < len; i++) {
-            binary += String.fromCharCode(uint8Array[i]);
-        }
-        let base64 = btoa(binary);
-        return base64.replace(/\+/g, '-').replace(/\//g, '_'); 
-    }
-
-    function formatPythonDate(date) {
-        const yyyy = date.getFullYear();
-        const mm = String(date.getMonth() + 1).padStart(2, '0');
-        const dd = String(date.getDate()).padStart(2, '0');
-        return `${yyyy}-${mm}-${dd}`;
-    }
+    // THAY ĐƯỜNG LINK GOOGLE APPS SCRIPT CỦA THẦY VÀO ĐÂY
+    const scriptURL = "https://script.google.com/macros/s/AKfycbzwRxZYCSlhIRW2bS59NSYOm9sroqWghbA-FLOCiTCQ1bctAfvuikf7MJ7IBQhk7WI/exec";
 
     async function generateKey() {
-        const serialInput = document.getElementById('macAddress');
-        const serialNumber = serialInput.value.trim();
-        const btn = document.getElementById('btnSubmit');
-        const resultBox = document.getElementById('resultBox');
-        const errorBox = document.getElementById('errorBox');
+        const serialNumber = document.getElementById('macAddress').value.trim();
         
-        resultBox.style.display = 'none';
-        errorBox.style.display = 'none';
-
         if (!serialNumber) {
-            alert("Vui lòng nhập ID của máy!");
+            alert("Vui lòng nhập mã máy (Serial/MAC)!");
             return;
         }
 
+        const btn = document.getElementById('btnGenerate');
+        const resultBox = document.getElementById('resultBox');
+        const expiryNotice = document.getElementById('expiryNotice');
+        
+        // Khóa nút trong lúc chờ mạng
+        btn.innerText = "Đang kết nối hệ thống...";
         btn.disabled = true;
-        btn.innerText = "Đang kiểm tra hệ thống...";
+        resultBox.style.display = 'none';
 
         try {
-            // 1. Tạo chuỗi ký key 1 ngày
-            const now = new Date();
-            const expirationDate = new Date(now.getTime() + (TRIAL_DAYS * 24 * 60 * 60 * 1000));
-            const expirationStr = formatPythonDate(expirationDate);
-
-            const payload = {
-                serial: serialNumber,
-                exp: expirationStr
-            };
-            const messageStr = JSON.stringify(payload);
-            const messageBytes = new TextEncoder().encode(messageStr);
-
-            const seedBytes = hexToUint8Array(PRIVATE_KEY_HEX);
-            const keyPair = nacl.sign.keyPair.fromSeed(seedBytes);
-            const signedMessageBytes = nacl.sign(messageBytes, keyPair.secretKey);
-            const finalKey = uint8ArrayToBase64UrlSafe(signedMessageBytes);
-
-            // 2. Gửi request lên Apps Script kiểm tra
-            const requestUrl = `${SCRIPT_URL}?id=${encodeURIComponent(serialNumber)}&key=${encodeURIComponent(finalKey)}`;
-            const response = await fetch(requestUrl);
+            // Gửi API lên hệ thống Google
+            const response = await fetch(`${scriptURL}?id=${encodeURIComponent(serialNumber)}`);
             const data = await response.json();
 
-            // 3. Phản hồi theo trạng thái
-            if (data.status === "exists") {
-                // Máy cũ: Báo không nhận được key nữa và yêu cầu liên hệ Zalo
-                errorBox.innerHTML = `⚠️ <b>Thông báo:</b> Mã máy này đã từng nhận key dùng thử và không thể nhận thêm.<br>👉 Vui lòng liên hệ Admin qua Zalo: <a href="https://zalo.me/0977346779" target="_blank"><b>0977346779</b></a> để đăng ký bản quyền!`;
-                errorBox.style.display = 'block';
-            } else if (data.status === "success") {
-                // Máy mới: Hiển thị key
-                document.getElementById('licenseKey').value = finalKey;
-                document.getElementById('resultBox').style.display = 'block';
-                document.getElementById('expiryNotice').innerText = `* Key dùng thử có hạn đến ngày: ${expirationStr} (${TRIAL_DAYS} ngày). Mỗi máy chỉ được cấp 1 lần duy nhất!`;
-                
-                const copyBtn = document.getElementById('copyBtn');
-                copyBtn.innerText = 'Copy';
-                copyBtn.style.backgroundColor = '#4a5568';
-            } else {
-                errorBox.innerText = "Lỗi: " + (data.message || "Vui lòng thử lại!");
-                errorBox.style.display = 'block';
+            if (data.status === "error") {
+                alert("Lỗi: " + data.message);
+                return;
             }
 
+            // Hiển thị Key
+            document.getElementById('licenseKey').value = data.key;
+            resultBox.style.display = 'block';
+            
+            // Xử lý thông báo tùy theo việc cấp mới hay cấp lại
+            if (data.status === "exists") {
+                expiryNotice.innerText = "⚠️ ID này đã được cấp Key trước đó. Đây là Key của bạn.";
+                expiryNotice.style.color = "#d69e2e";
+            } else if (data.status === "ok") {
+                expiryNotice.innerText = `✅ Đã tạo Key thành công! (Hạn đến ${data.exp})`;
+                expiryNotice.style.color = "var(--accent-color)";
+            }
+
+            // Đặt lại nút Copy
+            const copyBtn = document.getElementById('copyBtn');
+            copyBtn.innerText = 'Copy';
+            copyBtn.style.backgroundColor = '#4a5568';
+
         } catch (error) {
-            console.error("Lỗi:", error);
-            errorBox.innerText = "Lỗi kết nối máy chủ xác thực. Vui lòng thử lại sau!";
-            errorBox.style.display = 'block';
+            alert("Lỗi kết nối mạng! Vui lòng kiểm tra Internet và thử lại.");
+            console.error("Lỗi Fetch:", error);
         } finally {
+            // Mở khóa nút
+            btn.innerText = "Nhận Key Miễn Phí";
             btn.disabled = false;
-            btn.innerText = "Nhận Key Dùng Thử 1 Ngày";
         }
     }
 
@@ -309,6 +189,8 @@
             const btn = document.getElementById("copyBtn");
             btn.innerText = "Đã Copy!";
             btn.style.backgroundColor = "var(--accent-color)";
+        }).catch(err => {
+            alert("Không thể copy tự động, vui lòng copy thủ công!");
         });
     }
 </script>
